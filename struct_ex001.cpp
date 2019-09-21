@@ -12,10 +12,11 @@ produto é uma estrutura conforme a seguir:
 
 */
 
-/*#include <stdio.h>
+#include <stdio.h>
 #include <string.h>
-#include <locale.h>*/
+#include <locale.h>
 #define  CAPACIDADEMAXESTOQUE 100
+#define  CAPACIDADEPRODUTOS 3
 
 typedef struct{
     char nome[100];
@@ -45,12 +46,21 @@ void listaOsProdutos(PRODUTO *lista, int *i){
 
 void listaEstoque(PRODUTO *lista, int *i){
     printf("\n============ LISTA ESTOQUE ===============\n");
-    lista->totalEstoque = 0;
     for(int a = 0; a<*i; a++){
         printf("\n%s = %d",lista[a].nome, lista[a].estoque);
-        lista->totalEstoque += lista[a].estoque;
+        lista[a].totalEstoque = lista[a].estoque;
     }
     printf("\n\nO Estoque está com um total de %d/%d produtos cadastrados.\n\n", lista->totalEstoque, CAPACIDADEMAXESTOQUE);
+}
+
+
+void cadastraEstoque(PRODUTO *lista, int *i){
+    lista[*i].totalEstoque = lista[*i].estoque;
+    while(lista[*i].totalEstoque > CAPACIDADEMAXESTOQUE){
+        printf("\nCapacidade Maxima de estoque atingida %d/%d\nInsira uma quantidade menor de produtos\n>>", lista->totalEstoque, CAPACIDADEMAXESTOQUE);
+        scanf("%d", &lista[*i].estoque);
+        lista[*i].totalEstoque = lista[*i].estoque;
+    }
 }
 
 int main(){
@@ -59,7 +69,7 @@ int main(){
     int i = 0;
     while(true){
         //Condições de execução.
-        if(i == 3){
+        if(i == CAPACIDADEPRODUTOS){
             printf("\nLimite maximo de produtos atingido\n\n");
             return false;
         }
@@ -72,19 +82,20 @@ int main(){
             return false;
         }else if(escolha == 1){
             printf("\n===========================================\n");
-            printf("Nome do produto:\n>");
+            printf("Nome do produto:\n> ");
             scanf("%s", produtos[i].nome);
-            printf("Qnt Estoque:\n>");
+            printf("Qnt Produtos:\n> ");
             scanf("%d", &produtos[i].estoque);
-            printf("Preço:\n>");
+            cadastraEstoque(produtos, &i);
+            printf("Preço:\nR$ ");
             scanf("%f", &produtos[i].preco);
-            printf("Desconto:\n>%");
+            printf("Desconto:\n%% ");
             scanf("%d", &produtos[i].desconto);
             i++;
         }else if(escolha == 2){
             listaOsProdutos(produtos, &i);
         }else if(escolha ==3){
-             listaEstoque(produtos, &i);
+            listaEstoque(produtos, &i);
         }
     }
 
