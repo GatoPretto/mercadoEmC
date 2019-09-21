@@ -12,9 +12,9 @@ produto é uma estrutura conforme a seguir:
 
 */
 
-#include <stdio.h>
+/*#include <stdio.h>
 #include <string.h>
-#include <locale.h>
+#include <locale.h>*/
 #define  CAPACIDADEMAXESTOQUE 100
 
 typedef struct{
