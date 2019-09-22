@@ -16,7 +16,7 @@ produto é uma estrutura conforme a seguir:
 #include <string.h>
 #include <locale.h>
 #define  CAPACIDADEMAXESTOQUE 100
-#define  CAPACIDADEPRODUTOS 3
+#define  CAPACIDADEPRODUTOS 5
 
 typedef struct{
     char nome[100];
@@ -31,6 +31,7 @@ typedef struct{
 void listaOsProdutos(PRODUTO *lista, int *i){
     printf("\n============ LISTA PRODUTOS ===============");
     for(int a = 0; a<*i; a++){
+        printf("\nSequêncial = %d", *i);
         printf("\nNome = %s\n", lista[a].nome);
         printf("Qtd Estoque = %d\n", lista[a].estoque);
         printf("Preço = %.2f\n", lista[a].preco);
@@ -46,21 +47,23 @@ void listaOsProdutos(PRODUTO *lista, int *i){
 
 void listaEstoque(PRODUTO *lista, int *i){
     printf("\n============ LISTA ESTOQUE ===============\n");
-    for(int a = 0; a<*i; a++){
-        printf("\n%s = %d",lista[a].nome, lista[a].estoque);
-        lista[a].totalEstoque = lista[a].estoque;
+    int a = 0;
+    for(; a<*i; a++){
+        printf("\nTotal de %d %s em estoque.\n",lista[a].estoque, lista[a].nome);
     }
-    printf("\n\nO Estoque está com um total de %d/%d produtos cadastrados.\n\n", lista->totalEstoque, CAPACIDADEMAXESTOQUE);
+    printf("\nO Estoque está com um total de %d/%d produtos cadastrados.\n", lista->totalEstoque, CAPACIDADEMAXESTOQUE);    
 }
 
 
 void cadastraEstoque(PRODUTO *lista, int *i){
-    lista[*i].totalEstoque = lista[*i].estoque;
-    while(lista[*i].totalEstoque > CAPACIDADEMAXESTOQUE){
+    lista->totalEstoque += lista[*i].estoque ;
+    while(lista->totalEstoque > CAPACIDADEMAXESTOQUE){
+        printf("\nValor de i = %d", *i);
         printf("\nCapacidade Maxima de estoque atingida %d/%d\nInsira uma quantidade menor de produtos\n>>", lista->totalEstoque, CAPACIDADEMAXESTOQUE);
+        lista->totalEstoque -= lista[*i].estoque;
         scanf("%d", &lista[*i].estoque);
-        lista[*i].totalEstoque = lista[*i].estoque;
-    }
+        lista->totalEstoque += lista[*i].estoque;
+    }       
 }
 
 int main(){
@@ -75,7 +78,7 @@ int main(){
         }
         printf("\n===========================================\n                 [MENU]");
         printf("\n[0] Sair.\n[1] Cadastrar um novo produto\n[2] Listar Produtos Cadastrados\n");
-        printf("[3] Mostrar Estoque\n>>");
+        printf("[3] Mostrar Estoque\n>  ");
         int escolha;
         scanf("%d", &escolha);
         if(escolha == 0){
@@ -86,8 +89,10 @@ int main(){
             scanf("%s", produtos[i].nome);
             printf("Qnt Produtos:\n> ");
             scanf("%d", &produtos[i].estoque);
+            fflush(stdin);
+            __ptr_t(stdin);
             cadastraEstoque(produtos, &i);
-            printf("Preço:\nR$ ");
+            printf("Valor Un:\nR$ ");
             scanf("%f", &produtos[i].preco);
             printf("Desconto:\n%% ");
             scanf("%d", &produtos[i].desconto);
