@@ -39,7 +39,7 @@ typedef struct{
 void listaOsProdutos(PRODUTO *lista, int *id){
     printf("\n============ LISTA PRODUTOS ===============");
     for(int a = 0; a<*id; a++){
-        printf("\nId[%d]", lista[a].id);
+        printf("\nId[%d]", lista[a].id+1);
         printf("\nNome = %s\n", lista[a].nome);
         printf("Qtd Estoque = %d\n", lista[a].estoque);
         printf("Preço = %.2f\n", lista[a].preco);
@@ -85,12 +85,12 @@ void listaNomeProdutosCadastrados(PRODUTO *lista, int *i){
 
 void detalhesProduto(PRODUTO *lista, int *i){
     printf("Valor de i = %d\n", *i);
-    printf("\nId[%d]", lista->id);
+    printf("\nId[%d]", *i);
     printf("\nNome = %s\n", lista[*i-1].nome);
     printf("Qtd Estoque = %d\n", lista[*i-1].estoque);
     printf("Preço = %.2f\n", lista[*i-1].preco);
     printf("Desconto de %d%\n", lista[*i-1].desconto);
-    lista[*i].totalDesconto = lista[*i].preco-((lista[*i-1].desconto * lista[*i-1].preco) / 100);
+    lista[*i].totalDesconto = lista[*i-1].preco-((lista[*i-1].desconto * lista[*i-1].preco) / 100);
     printf("Valor do %s com desconto de %d%  = %.2f\n", lista[*i-1].nome, lista[*i-1].desconto, lista[*i-1].totalDesconto);
 }
 
@@ -106,20 +106,29 @@ void editarProduto(CRUD *edicao, PRODUTO *lista, int *i){
         scanf("%d", &edicao->sequencialParaEditar);
         for(int i = 0; i < lista->tamanhoLista; i++){
             if(lista[i].id == edicao->sequencialParaEditar-1){
+                //printf("Lista id = %d | Sequencial para editar = %d", lista[i].id, edicao->sequencialParaEditar-1);
                 printf("\n============ ALTERAR %s ===============\n", lista[i].nome);
                 detalhesProduto(lista, &edicao->sequencialParaEditar);
                 printf("\n\nNovo Nome do produto:\n> ");
                 scanf("%s", lista[i].nome);
                 printf("Qnt Produtos:\n> ");
-                lista[i].totalEstoque -= lista[i].estoque;
+                //15 ovos 40 peras = 55
+                lista->totalEstoque -= lista[i].estoque;
+                //55 - 40 = 15
                 scanf("%d", &lista[i].estoque);
                 fflush(stdin);
                 __ptr_t(stdin);
-                cadastraEstoque(lista, &i);
+                //15 + 35 = 40
+                lista->totalEstoque += lista[i].estoque;
+                if(lista->totalEstoque > 100){
+                    lista->totalEstoque -= lista[i].estoque;
+                    cadastraEstoque(lista, &i);
+                }
                 printf("Valor Un:\nR$ ");
                 scanf("%f", &lista[i].preco);
                 printf("Desconto:\n%% ");
                 scanf("%d", &lista[i].desconto);
+                edicao->sequencialParaEditar += 1;
             }
         }
     }
