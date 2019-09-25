@@ -31,6 +31,24 @@ PRODUTO * criarLista(){
     PRODUTO * criarLista = (PRODUTO *)malloc(sizeof(PRODUTO));
 }
 
+void mostraHoraMinutos(){
+    /*SETANDO DATA E HORA*/
+        //ponteiro para struct que armazena data e hora 
+        struct tm *data_hora_atual;
+        //variável do tipo time_t para armazenar o tempo em segundos
+        time_t segundos;
+        //obtendo o tempo em segundos 
+        time(&segundos);  
+        //converter de segundos para o tempo local  
+        data_hora_atual = localtime(&segundos);
+        //printf("\n %d/%d/%d", data_hora_atual->tm_mday, data_hora_atual->tm_mon, data_hora_atual->tm_year+1900);
+        if(data_hora_atual->tm_min < 10 and data_hora_atual->tm_min > 0){
+            printf("\n %d:0%d", data_hora_atual->tm_hour, data_hora_atual->tm_min);
+        }else{
+            printf("\n %d:%d", data_hora_atual->tm_hour, data_hora_atual->tm_min);
+        }
+        
+}
 
 void listaOsProdutos(PRODUTO lista){
     system("clear");
@@ -88,24 +106,9 @@ int main(){
     PRODUTO * lista = criarLista();
     while(true){
         int escolhaMenu = 0;
-
-        if(sequencial == CAPACIDADEPRODUTOS){
-            printf("\nLimite maximo de produtos atingido\n\n");
-            return false;
-        }
         system("clear");
-        /*SETANDO DATA E HORA*/
-        //ponteiro para struct que armazena data e hora 
-        struct tm *data_hora_atual;
-        //variável do tipo time_t para armazenar o tempo em segundos
-        time_t segundos;
-        //obtendo o tempo em segundos 
-        time(&segundos);  
-        //converter de segundos para o tempo local  
-        data_hora_atual = localtime(&segundos);
-        //printf("\n %d/%d/%d", data_hora_atual->tm_mday, data_hora_atual->tm_mon, data_hora_atual->tm_year+1900);
-        printf("\n %d:%d", data_hora_atual->tm_hour, data_hora_atual->tm_min);
 
+        mostraHoraMinutos();
         printf("\n            [MENU]\n");
         printf("\n[1] Cadastrar um novo produto\n[2] Listar Produtos Cadastrados\n > ");
         scanf("%d", &escolhaMenu);
