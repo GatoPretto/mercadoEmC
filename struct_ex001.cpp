@@ -1,185 +1,118 @@
-/* 01) Escrever um programa em C que cadastre o nome, a
-quantidade em estoque, o preço e o desconto de um 
-determinado produto. Em seguida imprima todos os dados
-e o valor de venda, com o devido desconto. COnsidere que cada
-produto é uma estrutura conforme a seguir:
-    typedef struct{
-        char[100] nome;
-        int estoque;
-        float preco;
-        int desconto;
-    }PRODUTO;
-
+/* 
+        === SISTEMA DE CONTROLE DE PRODUTOS E ESTOQUE DE MERCADO. === 
 */
 
 #include <stdio.h>
-#include <string.h>
-#include <locale.h>
+#include <string.h> //Manipulação de strings
+#include <locale.h> //Caracteres.
+#include <stdlib.h> //Alocação de memória
+#include <time.h>   //Timer
+#include <unistd.h> //sleep
+
 #define  CAPACIDADEMAXESTOQUE 100
 #define  CAPACIDADEPRODUTOS 5
 int sequencial = 0;
 
-typedef struct{
-    int id;
+typedef struct produto PRODUTO[100];
+
+struct produto{
+    int id = 0;
     char nome[100];
     int estoque;
+    int estoqueTotal = 0;
     float preco;
     int desconto;
     float totalDesconto;
-    int totalEstoque;
-    int tamanhoLista;
-}PRODUTO;
-
-typedef struct{
-    int sequencialParaEditar;
-}CRUD;
+};
 
 
 
-void listaOsProdutos(PRODUTO *lista, int *id){
-    printf("\n============ LISTA PRODUTOS ===============");
-    for(int a = 0; a<*id; a++){
-        printf("\nId[%d]", lista[a].id+1);
-        printf("\nNome = %s\n", lista[a].nome);
-        printf("Qtd Estoque = %d\n", lista[a].estoque);
-        printf("Preço = %.2f\n", lista[a].preco);
-        printf("Desconto de %d%\n", lista[a].desconto);
-        lista[a].totalDesconto = lista[a].preco-((lista[a].desconto * lista[a].preco) / 100);
-        printf("Valor do %s com desconto de %d%  = %.2f\n", lista[a].nome, lista[a].desconto, lista[a].totalDesconto);
-    }
-    if(int a = 0 == *id){
-        printf("\n\n\n        Nenhum Produto Cadastrado.\n\n");
-    }
-    
-}
-
-void listaEstoque(PRODUTO *lista, int *i){
-    printf("\n============ LISTA ESTOQUE ===============\n");
-    int a = 0;
-    for(; a<*i; a++){
-        printf("\nTotal de %d %s em estoque.\n",lista[a].estoque, lista[a].nome);
-    }
-    printf("\nO Estoque está com um total de %d/%d produtos cadastrados.\n", lista->totalEstoque, CAPACIDADEMAXESTOQUE);    
+PRODUTO * criarLista(){
+    PRODUTO * criarLista = (PRODUTO *)malloc(sizeof(PRODUTO));
 }
 
 
-void cadastraEstoque(PRODUTO *lista, int *i){
-    lista->totalEstoque += lista[*i].estoque ;
-    while(lista->totalEstoque > CAPACIDADEMAXESTOQUE){
-        printf("\nValor de i = %d", *i);
-        printf("\nCapacidade Maxima de estoque atingida %d/%d\nInsira uma quantidade menor de produtos\n>>", lista->totalEstoque, CAPACIDADEMAXESTOQUE);
-        lista->totalEstoque -= lista[*i].estoque;
-        scanf("%d", &lista[*i].estoque);
-        lista->totalEstoque += lista[*i].estoque;
-    }
-    lista->tamanhoLista += 1;       
-}
-
-void listaNomeProdutosCadastrados(PRODUTO *lista, int *i){
-    int a = 0;
-    printf("ID    | Nome");
-    for(; a<*i; a++){
-        printf("\n[%d]     %s", a+1, lista[a].nome);
-    }
-}
-
-void detalhesProduto(PRODUTO *lista, int *i){
-    printf("Valor de i = %d\n", *i);
-    printf("\nId[%d]", *i);
-    printf("\nNome = %s\n", lista[*i-1].nome);
-    printf("Qtd Estoque = %d\n", lista[*i-1].estoque);
-    printf("Preço = %.2f\n", lista[*i-1].preco);
-    printf("Desconto de %d%\n", lista[*i-1].desconto);
-    lista[*i].totalDesconto = lista[*i-1].preco-((lista[*i-1].desconto * lista[*i-1].preco) / 100);
-    printf("Valor do %s com desconto de %d%  = %.2f\n", lista[*i-1].nome, lista[*i-1].desconto, lista[*i-1].totalDesconto);
-}
-
-void editarProduto(CRUD *edicao, PRODUTO *lista, int *i){
-    printf("\n============ EDITAR PRODUTO ===============\n");
-    if(strlen(lista->nome) == NULL){
-        printf("\n            Nada para ser editado\n");
-    }else{
-        printf("Editar Qual Produto ?\n");
-        fflush(stdin);
-        listaNomeProdutosCadastrados(lista, i);
-        printf("\n\nEscolha a ID do produto que deseja editar \n> ");
-        scanf("%d", &edicao->sequencialParaEditar);
-        for(int i = 0; i < lista->tamanhoLista; i++){
-            if(lista[i].id == edicao->sequencialParaEditar-1){
-                //printf("Lista id = %d | Sequencial para editar = %d", lista[i].id, edicao->sequencialParaEditar-1);
-                printf("\n============ ALTERAR %s ===============\n", lista[i].nome);
-                detalhesProduto(lista, &edicao->sequencialParaEditar);
-                printf("\n\nNovo Nome do produto:\n> ");
-                scanf("%s", lista[i].nome);
-                printf("Qnt Produtos:\n> ");
-                //15 ovos 40 peras = 55
-                lista->totalEstoque -= lista[i].estoque;
-                //55 - 40 = 15
-                scanf("%d", &lista[i].estoque);
-                fflush(stdin);
-                __ptr_t(stdin);
-                //15 + 35 = 40
-                lista->totalEstoque += lista[i].estoque;
-                if(lista->totalEstoque > 100){
-                    lista->totalEstoque -= lista[i].estoque;
-                    cadastraEstoque(lista, &i);
-                }
-                printf("Valor Un:\nR$ ");
-                scanf("%f", &lista[i].preco);
-                printf("Desconto:\n%% ");
-                scanf("%d", &lista[i].desconto);
-                edicao->sequencialParaEditar += 1;
-            }
+void listaOsProdutos(PRODUTO lista){
+    system("clear");
+    printf("\n============== LISTA PRODUTOS ===============\n");
+    if(lista->id != 0){
+        for(int i = 1; i<= lista->id; i++){
+            printf("\nId[%d]", lista[i].id);
+            printf("\nNome = %s\n", lista[i].nome);
+            printf("Qtd Estoque = %d\n", lista[i].estoque);
         }
+        printf("\nPressione ENTER para voltar ao MENU.\n> ");
+        char c;
+        scanf("%c%*c", &c); //Importantissimo ! Pausa tanto em Linux como windows.
+        if(sizeof(c)!= 0){
+            system("clear");
+        }
+
+        
+        
+    }else{
+        printf("\n\n*** Não há produtos cadastrados. ***\n");
+        sleep(2);
+        system("clear");
+        
     }
     
 }
 
-void cadastraProduto(PRODUTO * lista, int *id){
-    printf("\n===========================================\n");
-            printf("\nid [%d]\n", *id+1);
-            lista[*id].id = *id;
+void cadastraEstoque(PRODUTO lista){
+    lista->estoqueTotal += lista[lista->id].estoque;
+    while(lista->estoqueTotal > CAPACIDADEMAXESTOQUE){
+        printf("\nCapacidade max de estoque esgotoada [Estoque %d/%d]\nInsira um valor menor.\n> ", lista->estoqueTotal, CAPACIDADEMAXESTOQUE);
+        lista->estoqueTotal -= lista[lista->id].estoque;
+        scanf("%d", &lista[lista->id].estoque);
+        lista->estoqueTotal += lista[lista->id].estoque;
+    };
+    //printf("\nEstoque %d/%d", lista->estoqueTotal, CAPACIDADEMAXESTOQUE);
+}
+
+void cadastraProduto(PRODUTO lista){
+    system("clear");
+    printf("\n========== CADASTRO DE PRODUTOS =============\n");
+            lista->id++;  
+            lista[lista->id].id = lista->id; //lista[0] = 0
+            printf("\nID [%d]\n", lista[lista->id].id);
             printf("Nome do produto:\n> ");
-            scanf("%s", lista[*id].nome);
+            scanf("%s", &lista[lista->id].nome); //lista[0].nome
             printf("Qnt Produtos:\n> ");
-            scanf("%d", &lista[*id].estoque);
-            fflush(stdin);
-            __ptr_t(stdin);
-            cadastraEstoque(lista, id);
-            printf("Valor Un:\nR$ ");
-            scanf("%f", &lista[*id].preco);
-            printf("Desconto:\n%% ");
-            scanf("%d", &lista[*id].desconto);
-            *id += 1;
+            scanf("%d", &lista[lista->id].estoque);
+            cadastraEstoque(lista);       
 }
 
 int main(){
     setlocale(LC_ALL, "Portuguese");
-    PRODUTO produtos[4];
-    CRUD editar[4];
-
-
+    PRODUTO * lista = criarLista();
     while(true){
-        //Condições de execução.
+        int escolhaMenu = 0;
+
         if(sequencial == CAPACIDADEPRODUTOS){
             printf("\nLimite maximo de produtos atingido\n\n");
             return false;
         }
-        printf("\n===========================================\n                 [MENU]");
-        printf("\n[0] Sair.\n[1] Cadastrar um novo produto\n[2] Listar Produtos Cadastrados\n");
-        printf("[3] Mostrar Estoque\n[4] Editar Produto.\n> ");
-        int escolha;
-        scanf("%d", &escolha);
-        if(escolha == 0){
-            return false;
-        }else if(escolha == 1){
-            cadastraProduto(produtos, &sequencial);
-        }else if(escolha == 2){
-            listaOsProdutos(produtos, &sequencial);
-        }else if(escolha == 3){
-            listaEstoque(produtos, &sequencial);
-        }else if(escolha == 4){
-            editarProduto(editar ,produtos, &sequencial);
+        system("clear");
+        /*SETANDO DATA E HORA*/
+        //ponteiro para struct que armazena data e hora 
+        struct tm *data_hora_atual;
+        //variável do tipo time_t para armazenar o tempo em segundos
+        time_t segundos;
+        //obtendo o tempo em segundos 
+        time(&segundos);  
+        //converter de segundos para o tempo local  
+        data_hora_atual = localtime(&segundos);
+        //printf("\n %d/%d/%d", data_hora_atual->tm_mday, data_hora_atual->tm_mon, data_hora_atual->tm_year+1900);
+        printf("\n %d:%d", data_hora_atual->tm_hour, data_hora_atual->tm_min);
+
+        printf("\n            [MENU]\n");
+        printf("\n[1] Cadastrar um novo produto\n[2] Listar Produtos Cadastrados\n > ");
+        scanf("%d", &escolhaMenu);
+        if(escolhaMenu == 1){
+            cadastraProduto(*lista);
+        }else if(escolhaMenu == 2){
+            listaOsProdutos(*lista);
         }
     }
 
