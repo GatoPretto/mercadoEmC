@@ -14,6 +14,7 @@
 int sequencial = 0;
 
 typedef struct produto PRODUTO[100];
+//Uma linha de teste.
 
 struct produto{
     int id = 0;
