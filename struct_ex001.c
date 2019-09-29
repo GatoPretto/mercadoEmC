@@ -8,6 +8,7 @@
 #include <stdlib.h> //Alocação de memória
 #include <time.h>   //Timer
 #include <unistd.h> //sleep
+#include <stdbool.h>
 
 #define  CAPACIDADEMAXESTOQUE 100
 #define  CAPACIDADEPRODUTOS 5
@@ -22,7 +23,6 @@ typedef struct{
     int desconto;
     float totalDesconto;
 }PRODUTO;
-
 
 PRODUTO * criarLista(PRODUTO *lst){
     PRODUTO * lista = (PRODUTO *)malloc(sizeof(PRODUTO));
@@ -59,25 +59,28 @@ void mostraHoraMinutos(){
 void listaOsProdutos(PRODUTO *lst){
 	
     system("cls");
-    printf("\n============== LISTA PRODUTOS ===============\n");
-    if(lst[lst->id].id != 0){
-    	int i = 1;
-        for(; i <= lst->id; i++){
-            printf("\nId[%d]", lst[i].id);
-            printf("\nNome = %s\n", lst[i].nome);
-            printf("Qtd Estoque = %d\n\n", lst[i].estoque);
-        }
-        system("pause");
-
-
-
-    }else{
-        printf("\n\n*** Não há produtos cadastrados. ***\n");
-        sleep(2);
-        system("clear");
-
-    }
-
+    printf("\n============== LISTA PRODUTOS ===============\n\n\n");
+    FILE * fileRead;
+	char nomeTxt[100];
+	int verificador = 0;
+	strcpy(nomeTxt, "c:\\HutCode\\banco\\cadastros.txt");
+	fileRead = fopen(nomeTxt,"r");
+	char string = ' ';
+	string = fgetc(fileRead);
+	while(string != EOF){
+		printf("%c", string);
+		if(string == '\n'){
+			printf("\n");
+			verificador = 1;
+		}
+		string = fgetc(fileRead);
+	}
+	if(lst->id == 0 && verificador != 1){
+		printf("\n*** NÃO HÁ PRODUTOS CADASTRADOS. ***\n");
+	}
+	fclose(fileRead);
+	printf("\n\n\n");
+	system("pause");
 }
 
 void cadastraEstoque(PRODUTO *lst){
@@ -94,23 +97,68 @@ void cadastraEstoque(PRODUTO *lst){
 void cadastraProduto(PRODUTO *lst){
     system("cls");
     printf("\n========== CADASTRO DE PRODUTOS =============\n");
-	lst->id++;
+	//lst->id++;
+	lst->id = pegaIdAtual();
 	lst[lst->id].id = lst->id; //lista[0] = 0
 	printf("\nID [%d]\n", lst[lst->id].id);
     printf("Nome do produto:\n> ");
     scanf(" %[^\n]s",lst[lst->id].nome);
-	//printf("Qnt Produtos:\n> ");
-	//scanf("%d", &lst[lst->id].estoque);
-    //cadastraEstoque(lst);
+    fflush(stdin);
+	printf("Qnt Produtos:\n> ");
+	scanf("%d", &lst[lst->id].estoque);
+    cadastraEstoque(lst);
     cadastraNoBancoDeDados(lst);
+}
+
+int pegaIdAtual(){
+	FILE * verificaTxt;
+	FILE * fileWrite;
+	char nomeTxt[100];
+	strcpy(nomeTxt, "c:\\HutCode\\banco\\cadastros.txt");
+	if(verificaTxt = fopen(nomeTxt, "r")){
+	//Consequentemente não entra no Else.
+	}else{
+		///Criando o arquivo .txt
+		if((fileWrite = fopen(nomeTxt, "w"))==NULL){
+			fileWrite = fopen(nomeTxt, "w");
+			fclose(fileWrite);
+		}	 
+		if((fileWrite = fopen(nomeTxt, "w"))==NULL){
+	 		printf("Arquivo não pode ser aberto\n");
+	 		system("pause");
+	 		exit(1);
+		}
+	}
+	//Anexando informação.
+	FILE * fileAppend;
+	FILE * fileRead;
+	char string = ' ';
+	int contadorDeLinhas = 1;
+	fileRead = fopen(nomeTxt, "r");
+		
+	//Faz primeiro a leitura do documento
+	string = fgetc(fileRead);
+	while(string != EOF){
+		if(string == '\n'){
+			contadorDeLinhas++;
+		}
+		string = fgetc(fileRead);		
+	}
+	fclose(fileRead);
+	if(contadorDeLinhas == 1){
+		fileAppend = fopen(nomeTxt, "a");
+		//fprintf(fileAppend, "\n");
+		fclose(fileAppend);
+		return contadorDeLinhas--;
+	}else{
+		return contadorDeLinhas-=1;
+	}	
 }
 
 void criaDiretorio(){
 	char caminhoPasta[150];
-	
 	strcpy(caminhoPasta,"mkdir c:\\HutCode\\banco");
 	system(caminhoPasta);
-	printf("\n%s\n", caminhoPasta);
 	//CRIAR UMA CONDIÇÃO PARA MOSTRAR CASO NÃO TENHA SIDO CRIADO UMA PASTA.
 }
 
@@ -141,45 +189,54 @@ void cadastraNoBancoDeDados(PRODUTO *lst){
 	//Anexando informação.
 	FILE * fileAppend;
 	FILE * fileRead;
-	char string[100000];
+	char string = ' ';
 	fileRead = fopen(nomeTxt, "r");
-	int x = 0;
-	char str[12];
-	while(fscanf(fileRead, "%s",string) != NULL){
-		if(lst->id == 1){
-			fileAppend = fopen(nomeTxt, "a");
-			fprintf(fileAppend, "    ID      NOME\n");
-			fclose(fileAppend);
+	int criarOuNaoMenu = 0, inserirInf = 0;
+	
+	//Faz primeiro a leitura do documento
+	string = fgetc(fileRead);
+	while(string != EOF){
+		//Se já existir um "I" no txt. Não cria novamente o menu.
+		if(string == 'I'){
+			printf("ENTROU");
+			criarOuNaoMenu = 1;
 		}
-		if(string[x] == '\0'){
-			fileAppend = fopen(nomeTxt, "a");
-			//converte inteiro para char.
-			char snum[5];
-			itoa(lst->id, snum, 10);
-			fprintf(fileAppend, "\n    [");
-			fprintf(fileAppend, snum);
-			fprintf(fileAppend, "]     ");
-			fprintf(fileAppend, lst[lst->id].nome);
-			fclose(fileAppend);
-			fclose(fileRead);
-			break;
-		}
-		x++;		
+		string = fgetc(fileRead);		
 	}
+	
+	//De acordo com as condições, adiciona informações.
+	if(criarOuNaoMenu == 0){
+			fileAppend = fopen(nomeTxt, "a");
+			fprintf(fileAppend, "    ID      NOME     ESTOQUE\n");
+			fclose(fileAppend);
+	}
+	fileAppend = fopen(nomeTxt, "a");
+	char str[12];
+	//converte inteiro para char.
+	char stringID[5], stringEstoque[5];
+	itoa(lst->id, stringID, 10);
+	itoa(lst[lst->id].estoque, stringEstoque, 10);
+	fprintf(fileAppend, "\n    [");
+	fprintf(fileAppend, stringID);
+	fprintf(fileAppend, "]     ");
+	fprintf(fileAppend, lst[lst->id].nome);
+	fprintf(fileAppend, "          ");
+	fprintf(fileAppend, stringEstoque);
+	fclose(fileAppend);
+	fclose(fileRead);
+	
 	//fprintf = passa toda uma frase.
 	//fputs = passa vetor de string
 	//fputc = passa apenas um caractere.
 	 
 }
 
-
 int main(){
     setlocale(LC_ALL, "Portuguese");
-    //Cria local para armazenar dados em .txt
-    
     //Cria lista.
     PRODUTO * lista[100];
     *lista = criarLista(&lista);
+    //Configura Diretório
     criaDiretorio();
     
     while(1){
