@@ -97,7 +97,6 @@ void cadastraEstoque(PRODUTO *lst){
 void cadastraProduto(PRODUTO *lst){
     system("cls");
     printf("\n========== CADASTRO DE PRODUTOS =============\n");
-	//lst->id++;
 	lst->id = pegaIdAtual();
 	lst[lst->id].id = lst->id; //lista[0] = 0
 	printf("\nID [%d]\n", lst[lst->id].id);
@@ -231,6 +230,58 @@ void cadastraNoBancoDeDados(PRODUTO *lst){
 	 
 }
 
+void editarProdutos(PRODUTO *lst){
+	lst->id = pegaIdAtual();
+	//int id_produto = 0;
+	char id_produto = ' ';
+	char nomeTxt[100], string = ' ';
+	system("cls");
+	printf("\n========== EDITAR PRODUTOS =============\n\n\n");
+	strcpy(nomeTxt, "c:\\HutCode\\banco\\cadastros.txt");
+	FILE * fileRead;
+	fileRead = fopen(nomeTxt,"r+");
+	string = fgetc(fileRead);
+	while(string != EOF){
+		printf("%c", string);
+		if(string == '\n'){
+			printf("\n");
+		}
+		string = fgetc(fileRead);
+	}
+	printf("\n\n\nInforme a ID do produto que deseja alterar\n> ");
+	scanf(" %c", &id_produto);//Lembrar de jogar o %c >>
+	rewind(fileRead);
+	string = fgetc(fileRead);
+	while(string != EOF){
+		if(string == '['){
+			string = fgetc(fileRead);
+			printf("String = %c, ID = %c\n\n", string, id_produto);
+			system("pause");
+			if(string == lst->id){
+				while(string != '\0'){
+					printf("%c", string);
+					string = fgetc(fileRead);
+				}	
+			}else if(string == id_produto){
+				printf("Entrou id = %c string = %c\n[", id_produto, string);
+				while(string != '\n'){
+					printf("%c", string);
+					string = fgetc(fileRead);
+				}
+				printf("\n\n\n");
+				id_produto = 0;
+				system("pause");
+			}
+		}
+		string = fgetc(fileRead);
+	}			
+	if(string == '\n'){
+		printf("\n");
+	}
+	
+	fclose(fileRead);
+}
+	
 int main(){
     setlocale(LC_ALL, "Portuguese");
     //Cria lista.
@@ -238,13 +289,13 @@ int main(){
     *lista = criarLista(&lista);
     //Configura Diretório
     criaDiretorio();
-    
     while(1){
     	int escolhaMenu = 0;
     	system("cls");
     	mostraHoraMinutos();
     	printf("\n            [MENU]\n");
-        printf("\n[0] Sair\n[1] Cadastrar um novo produto\n[2] Listar Produtos Cadastrados\n > ");
+        printf("\n[0] Sair.\n[1] Cadastrar um novo produto.\n[2] Listar Produtos Cadastrados.");
+		printf("\n[3] Editar Produto\n > ");
         scanf("%d", &escolhaMenu);
         if(escolhaMenu == 0){
     		return 0;
@@ -252,6 +303,8 @@ int main(){
         	cadastraProduto(lista);
 		}else if(escolhaMenu == 2 ){
 			listaOsProdutos(lista);
+		}else if(escolhaMenu == 3){
+			editarProdutos(lista);
 		}
 
    	}
