@@ -81,16 +81,9 @@ void listaOsProdutos(PRODUTO *lst){
 	system("pause");
 }
 
-void cadastraEstoque(PRODUTO *lst){
+/*void cadastraEstoque(int *lst){
 	
-    lst->estoqueTotal += lst[lst->id].estoque;
-    while(lst->estoqueTotal > CAPACIDADEMAXESTOQUE){
-        printf("\nCapacidade max de estoque esgotoada [Estoque %d/%d]\nInsira um valor menor.\n> ", lst->estoqueTotal, CAPACIDADEMAXESTOQUE);
-        lst->estoqueTotal -= lst[lst->id].estoque;
-        scanf("%d", &lst[lst->id].estoque);
-        lst->estoqueTotal += lst[lst->id].estoque;
-    };
-}
+}*/
 
 void cadastraProduto(PRODUTO *lst){
     system("cls");
@@ -103,7 +96,6 @@ void cadastraProduto(PRODUTO *lst){
     fflush(stdin);
 	printf("Qnt Produtos:\n> ");
 	scanf("%d", &lst[lst->id].estoque);
-    cadastraEstoque(lst);
     cadastraNoBancoDeDados(lst);
 }
 
@@ -227,28 +219,77 @@ void cadastraNoBancoDeDados(PRODUTO *lst){
 	 
 }
 
-void editarProduto(char id, char *nameTxt, PRODUTO *lstDois){
+void editarProduto(char id, char *nameTxt){
 	FILE *fileRead;
-	FILE * fileAppend;
-	char recebeRead = ' ';
+	FILE *fileBackup;
+	FILE *fileAppend;
+	int condicao = 0;
+	char recebeRead = ' ', passaBackup = ' ';
+	
 	fileRead = fopen(nameTxt, "r+");
-	recebeRead = fgetc(fileRead);
+	fileAppend = fopen("c:\\HutCode\\banco\\backup.txt", "w");
+	
 	while(recebeRead != EOF){
 		if(recebeRead == '['){
+			fputc('[', fileAppend);
 			recebeRead = fgetc(fileRead);
 			if(recebeRead == id){
-				int x=0;
-				while(x != 50){
-					fprintf(fileRead,"A");
+				char novoNome[50];
+				char novoEstoque[10];
+				printf("\n\nNome: \n> ");
+				scanf(" %[^\n]s",novoNome);
+				printf("Estoque \n> ");
+				scanf(" %[^\n]s", novoEstoque);
+				
+				
+				while(recebeRead != '\n' && recebeRead != EOF){
+					if(condicao == 0){
+						fputc(recebeRead, fileAppend);
+						fputc(']', fileAppend);
+						fputs("     ", fileAppend);
+						condicao = 1;
+					}else if(condicao == 1){						
+						recebeRead = fgetc(fileRead);
+						if(recebeRead != ' '){
+							fputs(novoNome, fileAppend);
+							condicao = 2;
+						 	recebeRead = fgetc(fileRead);			
+						}
+					}else if(condicao == 2){
+						recebeRead = fgetc(fileRead);
+						if(recebeRead != ' '){
+							fputs("\t\t", fileAppend);
+							fputs(novoEstoque, fileAppend);
+							id = -1;
+							condicao = -1;
+						}	
+					}
+					fputc(' ', fileAppend);
 					recebeRead = fgetc(fileRead);
-					x++;
 				}
 				
 			}
 		}
+		fputc(recebeRead, fileAppend);
 		recebeRead = fgetc(fileRead);
 	}
 	fclose(fileRead);	
+	fclose(fileAppend);
+	
+	//PASSANDO OS DADOS ATUALIZADOS.
+	fileRead = fopen(nameTxt, "w");
+	fileAppend = fopen("c:\\HutCode\\banco\\backup.txt", "r+");
+	passaBackup = fgetc(fileAppend);
+	while(passaBackup != EOF){
+		fputc(passaBackup, fileRead);
+		passaBackup = fgetc(fileAppend);
+	}
+	fclose(fileRead);
+	fclose(fileAppend);
+	remove("c:\\HutCode\\banco\\backup.txt");
+	
+	//Excluindo backup;
+	
 }
 
 void escolhaProdutoEditar(PRODUTO *lst){
@@ -259,7 +300,7 @@ void escolhaProdutoEditar(PRODUTO *lst){
 	FILE * fileRead;
 	
 	system("cls");
-	printf("\n========== EDITAR PRODUTOS =============\n\n\n");
+	printf("\n========== EDITAR PRODUTOS =============\n\n");
 	strcpy(nomeTxt, "c:\\HutCode\\banco\\cadastros.txt");
 	fileRead = fopen(nomeTxt,"r+");
 	string = fgetc(fileRead);
@@ -279,29 +320,11 @@ void escolhaProdutoEditar(PRODUTO *lst){
 	while(string != EOF){
 		if(string == '['){
 			string = fgetc(fileRead);
-			//Se for a ultima linha do .txt
-			if(string == stringID[0]){
+			if(string == id_produto ){
 				system("clear");
-				printf("\n========== EDITANDO PRODUTO =============\n\n\n");
-				printf("\n\nID\t     Nome\t\t\tEstoque\n\n[");
-				while(string!=EOF){
-					if(string == ' '){
-						printf(" ");
-					}
-					printf("%c", string);
-					string = fgetc(fileRead);
-				}
-				printf("\n\n\n");
-				stringID[0] = -1;
-				fclose(fileRead);
-				//editarProduto();
-				system("pause");
-			
-			}else if(string == id_produto ){
-				system("clear");
-				printf("\n========== EDITANDO PRODUTO =============\n\n\n");
-				printf("\n\nID\t      Nome\t\t\tEstoque\n\n[");
-				while(string != '\n'){
+				printf("\n========== EDITANDO PRODUTO =============\n\n");
+				printf("\nID\t      Nome\t\t\tEstoque\n[");
+				while(string != '\n' && string != EOF){
 					if(string == ' '){
 						printf(" ");
 					}
@@ -310,8 +333,8 @@ void escolhaProdutoEditar(PRODUTO *lst){
 					
 				}
 				fclose(fileRead);
-				editarProduto(id_produto, nomeTxt, lst);
-				printf("\n\n\n");
+				editarProduto(id_produto, nomeTxt);
+				printf("\n");
 				id_produto = 0;
 				stringID[0] = -1;
 				system("pause");
