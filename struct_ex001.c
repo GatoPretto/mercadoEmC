@@ -219,6 +219,127 @@ void cadastraNoBancoDeDados(PRODUTO *lst){
 	 
 }
 
+void excluirProduto(char id, char *nameTxt){
+	FILE *fileRead;
+	FILE *fileReadFuturo;
+	FILE *fileBackup;
+	FILE *fileAppend;
+	int condicao = 0;
+	char recebeRead = ' ', passaBackup = ' ';
+	char recebeReadFuturo = ' ';
+
+	
+	fileAppend = fopen("c:\\HutCode\\banco\\backup.txt", "w");
+	if((fileAppend = fopen("c:\\HutCode\\banco\\backup.txt", "w"))==NULL){
+			fileAppend = fopen("c:\\HutCode\\banco\\backup.txt", "w");
+			fclose(fileAppend);
+			if((fileAppend = fopen("c:\\HutCode\\banco\\backup.txt","w"))==NULL){
+				printf("\nNão foi possivel criar o arquivo de backup, contate o administrador do sistema.\n");
+			}
+	}
+	fclose(fileAppend);
+	
+	fileReadFuturo = fopen(nameTxt, "r");
+	fileRead = fopen(nameTxt, "r");
+	fileAppend = fopen("c:\\HutCode\\banco\\backup.txt", "r+");
+	
+	recebeReadFuturo = fgetc(fileReadFuturo);
+	while(recebeRead != EOF){
+		if(recebeRead == '[' && recebeReadFuturo != id){
+			fputc('[', fileAppend);
+			while(recebeRead != EOF && recebeRead != '\n'){
+				recebeRead = fgetc(fileRead);
+				putc(recebeRead, fileAppend);
+				recebeReadFuturo = fgetc(fileReadFuturo);
+			}
+				
+		}else{
+			if(recebeReadFuturo == id){
+				while(recebeRead != '\n' && recebeRead != EOF){
+					fputc(' ', fileAppend);
+					recebeRead = fgetc(fileRead);
+					recebeReadFuturo = fgetc(fileReadFuturo);				
+				}
+			}	
+				
+		}	
+	
+		fputc(recebeRead, fileAppend);
+		recebeRead = fgetc(fileRead);
+		recebeReadFuturo = fgetc(fileReadFuturo);
+	}
+	fclose(fileRead);	
+	fclose(fileAppend);
+	fclose(fileReadFuturo);
+	
+	//PASSANDO OS DADOS ATUALIZADOS.
+	fileRead = fopen(nameTxt, "w");
+	fileAppend = fopen("c:\\HutCode\\banco\\backup.txt", "r+");
+	passaBackup = fgetc(fileAppend);
+	while(passaBackup != EOF){
+		fputc(passaBackup, fileRead);
+		passaBackup = fgetc(fileAppend);
+	}
+	fclose(fileRead);
+	fclose(fileAppend);
+	fclose(fileReadFuturo);
+	//Excluindo backup;
+	remove("c:\\HutCode\\banco\\backup.txt");
+}
+
+void escolherExclusaoProduto(PRODUTO *lst){
+	lst->id = pegaIdAtual()-1;
+	char id_produto = ' ', stringID[10];
+	char nomeTxt[100], string = ' ';
+	FILE * fileRead;
+	
+	system("cls");
+	printf("\n========== EDITANDO PRODUTOS =============\n\n");
+	strcpy(nomeTxt, "c:\\HutCode\\banco\\cadastros.txt");
+	fileRead = fopen(nomeTxt,"r+");
+	string = fgetc(fileRead);
+	while(string != EOF){
+		printf("%c", string);
+		if(string == '\n'){
+			printf("\n");
+		}
+		string = fgetc(fileRead);
+	}
+	printf("\n\n\nInforme a ID do produto que deseja Excluir\n> ");
+	scanf(" %c", &id_produto);//Lembrar de jogar o %c >>
+	//Conversão de inteiro para char.
+	itoa(lst->id, stringID, 10);
+	rewind(fileRead);
+	string = fgetc(fileRead);
+	while(string != EOF){
+		if(string == '['){
+			string = fgetc(fileRead);
+			if(string == id_produto ){
+				system("clear");
+				printf("\n========== EXCLUINDO PRODUTO =============\n\n");
+				printf("\nID\t      Nome\t\t\tEstoque\n[");
+				while(string != '\n' && string != EOF){
+					if(string == ' '){
+						printf(" ");
+					}
+					printf("%c", string);
+					string = fgetc(fileRead);
+					
+				}
+				fclose(fileRead);
+				printf("\n\nAguarde a exclusão do produto...\n\n");
+				sleep(2);	
+				excluirProduto(id_produto, nomeTxt);
+				id_produto = 0;
+			}
+		}
+		string = fgetc(fileRead);
+	}			
+	if(string == '\n'){
+		printf("\n");
+	}
+}
+
 void editarProduto(char id, char *nameTxt){
 	FILE *fileRead;
 	FILE *fileBackup;
@@ -286,21 +407,18 @@ void editarProduto(char id, char *nameTxt){
 	}
 	fclose(fileRead);
 	fclose(fileAppend);
-	remove("c:\\HutCode\\banco\\backup.txt");
-	
 	//Excluindo backup;
-	
+	remove("c:\\HutCode\\banco\\backup.txt");
 }
 
 void escolhaProdutoEditar(PRODUTO *lst){
 	lst->id = pegaIdAtual()-1;
-	//int id_produto = 0;
 	char id_produto = ' ', stringID[10];
 	char nomeTxt[100], string = ' ';
 	FILE * fileRead;
 	
 	system("cls");
-	printf("\n========== EDITAR PRODUTOS =============\n\n");
+	printf("\n========== EDITANDO PRODUTOS =============\n\n");
 	strcpy(nomeTxt, "c:\\HutCode\\banco\\cadastros.txt");
 	fileRead = fopen(nomeTxt,"r+");
 	string = fgetc(fileRead);
@@ -336,7 +454,6 @@ void escolhaProdutoEditar(PRODUTO *lst){
 				editarProduto(id_produto, nomeTxt);
 				printf("\n");
 				id_produto = 0;
-				stringID[0] = -1;
 				system("pause");
 			}
 		}
@@ -361,7 +478,7 @@ int main(){
     	mostraHoraMinutos();
     	printf("\n            [MENU]\n");
         printf("\n[0] Sair.\n[1] Cadastrar um novo produto.\n[2] Listar Produtos Cadastrados.");
-		printf("\n[3] Editar Produto\n > ");
+		printf("\n[3] Editar Produto\n[4] Excluir Produto\n > ");
         scanf("%d", &escolhaMenu);
         if(escolhaMenu == 0){
     		return 0;
@@ -371,6 +488,8 @@ int main(){
 			listaOsProdutos(lista);
 		}else if(escolhaMenu == 3){
 			escolhaProdutoEditar(lista);
+		}else if(escolhaMenu == 4){
+			escolherExclusaoProduto(lista);
 		}
 
    	}
