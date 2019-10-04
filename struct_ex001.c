@@ -8,8 +8,6 @@
 #include <unistd.h> //sleep
 #include <stdbool.h>
 
-#define  CAPACIDADEMAXESTOQUE 100
-#define  CAPACIDADEPRODUTOS 5
 int sequencial = 0;
 
 typedef struct{
@@ -289,7 +287,7 @@ void excluirProduto(char id, char *nameTxt){
 
 void escolherExclusaoProduto(PRODUTO *lst){
 	lst->id = pegaIdAtual()-1;
-	char id_produto = ' ', stringID[10];
+	char id_produto = ' ', stringID[10], decisaoExclusaoProduto;
 	char nomeTxt[100], string = ' ';
 	FILE * fileRead;
 	
@@ -327,9 +325,14 @@ void escolherExclusaoProduto(PRODUTO *lst){
 					
 				}
 				fclose(fileRead);
-				printf("\n\nAguarde a exclusão do produto...\n\n");
-				sleep(2);	
-				excluirProduto(id_produto, nomeTxt);
+				printf("\n\nTem certeza que deseja excluir esse produto ? [S/N]\n> ");
+				scanf(" %c", &decisaoExclusaoProduto);
+				if(decisaoExclusaoProduto == 's' || decisaoExclusaoProduto == 'S'){
+					printf("\n\nAguarde a exclusão do produto...\n\n");
+					sleep(2);	
+					excluirProduto(id_produto, nomeTxt);
+				}
+				
 				id_produto = 0;
 			}
 		}
