@@ -8,9 +8,9 @@
 #include <unistd.h> //sleep
 #include <stdbool.h>
 
-int sequencial = 0;
+typedef struct _produto PRODUTO;
 
-typedef struct{
+struct _produto{
     int id ;
     char nome[100];
     int estoque;
@@ -18,19 +18,53 @@ typedef struct{
     float preco;
     int desconto;
     float totalDesconto;
-}PRODUTO;
+    PRODUTO *next;
+};
 
-PRODUTO * criarLista(PRODUTO *lst){
-    PRODUTO * lista = (PRODUTO *)malloc(sizeof(PRODUTO));
-    if(lista == NULL){
-    	printf("Memoria Insuficiente");
-    	exit(1);
+
+static PRODUTO *list_init(void){
+	PRODUTO *mem = malloc(sizeof(PRODUTO));
+	if(!mem){
+		perror("malloc");
+		exit(1);
+	}else{
+		/*memset esta função é utilizada para preencher
+		determinada área de memória com o caracter definido pelo usuário
+		no argumento c.Basicamente, quando criamos variáveis do tipo vetor
+		ou estruturas de dados, devemos limpar aárea de memória antes
+		de utilizar.*/
+		memset(mem, 0, sizeof(PRODUTO));
+		return mem;
 	}
-	lst->id = 0;
-	lst->estoque = 0;
-	lst->estoqueTotal = 0;
-	lst->preco = 0;
-	return lst->id;
+}
+
+static PRODUTO *list_add(int estoque, char *nome, PRODUTO *primeiraPosLista){
+	/*‘pos_inicioDaLista’ sempre aponta para o início da lista*/
+	PRODUTO *inicio,*temp;	
+
+	/*ao adicionar o primeiro membro precisamos*criar a lista*/
+	if(inicio == NULL){
+		inicio = temp = list_init();
+	  	
+	/*caso a lista já exista, devemos alocar memória no último membro*/
+	}else {
+		inicio = temp = primeiraPosLista;
+		while(temp)
+			if(temp->next == NULL){
+				break;	
+			} 	
+			else{
+				temp = temp->next;	
+			} 
+					
+			/*agora temp->next é um membro vazio e será utilizado*/
+			temp->next = list_init();
+			temp = temp->next;				
+	}
+	/*copia os dados no novo membro da lista*/
+	temp[temp->id].estoque = estoque;
+	strncpy(temp[temp->id].nome, nome, sizeof(temp[temp->id].nome));
+	return inicio;	
 }
 
 void mostraHoraMinutos(){
@@ -44,7 +78,7 @@ void mostraHoraMinutos(){
         //converter de segundos para o tempo local
         data_hora_atual = localtime(&segundos);
         //printf("\n %d/%d/%d", data_hora_atual->tm_mday, data_hora_atual->tm_mon, data_hora_atual->tm_year+1900);
-        if(data_hora_atual->tm_min < 10 && data_hora_atual->tm_min > 0){
+        if(data_hora_atual->tm_min < 10 && data_hora_atual->tm_min >= 0){
             printf("\n %d:0%d", data_hora_atual->tm_hour, data_hora_atual->tm_min);
         }else{
             printf("\n %d:%d", data_hora_atual->tm_hour, data_hora_atual->tm_min);
@@ -79,77 +113,11 @@ void listaOsProdutos(PRODUTO *lst){
 	system("pause");
 }
 
-/*void cadastraEstoque(int *lst){
+void cadastraEstoque(int *lst){
 	
-}*/
-
-void cadastraProduto(PRODUTO *lst){
-    system("cls");
-    printf("\n========== CADASTRO DE PRODUTOS =============\n");
-	lst->id = pegaIdAtual();
-	lst[lst->id].id = lst->id; //lista[0] = 0
-	printf("\nID [%d]\n", lst[lst->id].id);
-    printf("Nome do produto:\n> ");
-    scanf(" %[^\n]s",lst[lst->id].nome);
-    fflush(stdin);
-	printf("Qnt Produtos:\n> ");
-	scanf("%d", &lst[lst->id].estoque);
-    cadastraNoBancoDeDados(lst);
 }
 
-int pegaIdAtual(){
-	FILE * verificaTxt;
-	FILE * fileWrite;
-	char nomeTxt[100];
-	strcpy(nomeTxt, "c:\\HutCode\\banco\\cadastros.txt");
-	if(verificaTxt = fopen(nomeTxt, "r")){
-	//Consequentemente não entra no Else.
-	}else{
-		///Criando o arquivo .txt
-		if((fileWrite = fopen(nomeTxt, "w"))==NULL){
-			fileWrite = fopen(nomeTxt, "w");
-			fclose(fileWrite);
-		}	 
-		if((fileWrite = fopen(nomeTxt, "w"))==NULL){
-	 		printf("Arquivo não pode ser aberto\n");
-	 		system("pause");
-	 		exit(1);
-		}
-	}
-	//Anexando informação.
-	FILE * fileAppend;
-	FILE * fileRead;
-	char string = ' ';
-	int contadorDeLinhas = 1;
-	fileRead = fopen(nomeTxt, "r");
-		
-	//Faz primeiro a leitura do documento
-	string = fgetc(fileRead);
-	while(string != EOF){
-		if(string == '\n'){
-			contadorDeLinhas++;
-		}
-		string = fgetc(fileRead);		
-	}
-	fclose(fileRead);
-	if(contadorDeLinhas == 1){
-		fileAppend = fopen(nomeTxt, "a");
-		//fprintf(fileAppend, "\n");
-		fclose(fileAppend);
-		return contadorDeLinhas--;
-	}else{
-		return contadorDeLinhas-=1;
-	}	
-}
-
-void criaDiretorio(){
-	char caminhoPasta[150];
-	strcpy(caminhoPasta,"mkdir c:\\HutCode\\banco");
-	system(caminhoPasta);
-	//CRIAR UMA CONDIÇÃO PARA MOSTRAR CASO NÃO TENHA SIDO CRIADO UMA PASTA.
-}
-
-void cadastraNoBancoDeDados(PRODUTO *lst){  
+void cadastraNoBancoDeDados(PRODUTO *list){  
     char nomePastaBD[100], nomeTxt[100];   
     //Cria o arquivo .txt
     FILE *fileWrite;
@@ -200,12 +168,12 @@ void cadastraNoBancoDeDados(PRODUTO *lst){
 	char str[12];
 	//converte inteiro para char.
 	char stringID[5], stringEstoque[5];
-	itoa(lst->id, stringID, 10);
-	itoa(lst[lst->id].estoque, stringEstoque, 10);
+	itoa(list->id, stringID, 10);
+	itoa(list[list->id].estoque, stringEstoque, 10);
 	fprintf(fileAppend, "\n    [");
 	fprintf(fileAppend, stringID);
 	fprintf(fileAppend, "]     ");
-	fprintf(fileAppend, lst[lst->id].nome);
+	fprintf(fileAppend, list[list->id].nome);
 	fprintf(fileAppend, "          ");
 	fprintf(fileAppend, stringEstoque);
 	fclose(fileAppend);
@@ -215,6 +183,95 @@ void cadastraNoBancoDeDados(PRODUTO *lst){
 	//fputs = passa vetor de string
 	//fputc = passa apenas um caractere.
 	 
+}
+
+int cadastraProduto(PRODUTO *lst){
+	PRODUTO *pos_inicioDaLista, *bkp;
+	lst->id = pegaIdAtual();
+    system("cls");
+    printf("\n========== CADASTRO DE PRODUTOS =============\n");	
+	lst[lst->id].id = lst->id; 
+	printf("\nID [%d]\n", lst[lst->id].id);
+	
+    fprintf(stdout, "Nome do produto:\n> ");
+    scanf(" %[^\n]s" , lst[lst->id].nome);
+    snprintf(lst[lst->id].nome, sizeof(lst[lst->id].nome), lst[lst->id].nome); 
+    
+    fprintf(stdout, "Quantidade Estoque: \n");
+    scanf("%d", &lst[lst->id].estoque);
+    
+    printf("\n\n");
+	system("pause");
+	//Manda as variáveis para tratar alocação de memória.
+	pos_inicioDaLista = list_add(lst[lst->id].estoque, lst[lst->id].nome, pos_inicioDaLista);
+	
+	//1-) Bkp recebe posição anterior.
+	//2-) Posição inicial, recebe a prox Posição.
+	//3-) Limpa a memória de Bkp.
+	while(pos_inicioDaLista){
+		if(pos_inicioDaLista->next){
+			bkp = pos_inicioDaLista;
+			pos_inicioDaLista = pos_inicioDaLista->next;
+			free(bkp);
+		}else{
+			free(pos_inicioDaLista);
+			pos_inicioDaLista = NULL;
+			break;
+		}
+	}
+	cadastraNoBancoDeDados(lst);
+	return 1;
+    
+}
+
+int pegaIdAtual(){
+	FILE * verificaTxt;
+	FILE * fileWrite;
+	char nomeTxt[100];
+	strcpy(nomeTxt, "c:\\HutCode\\banco\\cadastros.txt");
+	if(verificaTxt = fopen(nomeTxt, "r")){
+	}else{
+		///Criando o arquivo .txt
+		if((fileWrite = fopen(nomeTxt, "w"))==NULL){
+			fileWrite = fopen(nomeTxt, "w");
+			fclose(fileWrite);
+		}	 
+		if((fileWrite = fopen(nomeTxt, "w"))==NULL){
+	 		printf("Arquivo não pode ser aberto\n");
+	 		system("pause");
+	 		exit(1);
+		}
+	}
+	//Anexando informação.
+	FILE * fileAppend;
+	FILE * fileRead;
+	char string = ' ';
+	int contadorDeLinhas = 1;
+	fileRead = fopen(nomeTxt, "r");
+		
+	//Faz primeiro a leitura do documento
+	string = fgetc(fileRead);
+	while(string != EOF){
+		if(string == '\n'){
+			contadorDeLinhas++;
+		}
+		string = fgetc(fileRead);		
+	}
+	fclose(fileRead);
+	if(contadorDeLinhas == 1){
+		fileAppend = fopen(nomeTxt, "a");
+		fclose(fileAppend);
+		return contadorDeLinhas--;
+	}else{
+		return contadorDeLinhas-=1;
+	}	
+}
+
+void criaDiretorio(){
+	char caminhoPasta[150];
+	strcpy(caminhoPasta,"mkdir c:\\HutCode\\banco");
+	system(caminhoPasta);
+	//CRIAR UMA CONDIÇÃO PARA MOSTRAR CASO NÃO TENHA SIDO CRIADO UMA PASTA.
 }
 
 void excluirProduto(char id, char *nameTxt){
@@ -467,14 +524,15 @@ void escolhaProdutoEditar(PRODUTO *lst){
 	}
 	
 }
-	
+
 int main(){
     setlocale(LC_ALL, "Portuguese");
-    //Cria lista.
-    PRODUTO * lista[100];
-    *lista = criarLista(&lista);
+    //Cria lista. 
+    PRODUTO *lista = malloc(sizeof(PRODUTO));
+    memset(lista,0,sizeof(lista));
     //Configura Diretório
     criaDiretorio();
+    
     while(1){
     	int escolhaMenu = 0;
     	system("cls");
@@ -494,7 +552,7 @@ int main(){
 		}else if(escolhaMenu == 4){
 			escolherExclusaoProduto(lista);
 		}
-
+		
    	}
 
 
